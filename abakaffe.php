@@ -21,6 +21,7 @@ if($json === FALSE) {
 	//decode JSON result and create variables
 	$coffee = json_decode($json, true); 
 	$status = $coffee['coffee']['status'];
+	$hours = $coffee['coffee']['time_since']['hours']; 
 	$minutes = $coffee['coffee']['time_since']['minutes']; 
 
 	//print status
@@ -28,9 +29,10 @@ if($json === FALSE) {
 	
 	switch($status){
 		case true:
+			echo 'Hours since last coffee: ' . $hours . '</br>';
 			echo 'Minutes since last coffee: ' . $minutes . '</br>';	
 
-			if($minutes == 1){
+			if($hours == 0 && $minutes == 1){
 				sendYo();
 			}
 			break;
@@ -44,7 +46,7 @@ if($json === FALSE) {
 function sendYo(){
 
 	//configure - SQLI
-	$con = new mysqli('localhost', 'founder', '***************', 'founder_yo');
+	$con = new mysqli('localhost', 'founder', '********************', 'founder_yo');
 	 
 	//connect to database
 	if($con->connect_errno > 0){
@@ -55,7 +57,7 @@ function sendYo(){
 	
 	//send to YO
 	$url = 'https://api.justyo.co/yoall/';
-	$data = array('api_token' => '***********************************');
+	$data = array('api_token' => '*************************************');
 
 	// use key 'http' even if you send the request to https://...
 	$options = array(
