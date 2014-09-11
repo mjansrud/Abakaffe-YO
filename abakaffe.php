@@ -32,7 +32,7 @@ if($json === FALSE) {
 			echo 'Hours since last coffee: ' . $hours . '</br>';
 			echo 'Minutes since last coffee: ' . $minutes . '</br>';	
 
-			if($hours == 0 && $minutes == 1){
+			if($hours == 0 && $minutes == 0){
 				sendYo();
 			}
 			break;
