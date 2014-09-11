@@ -45,14 +45,6 @@ if($json === FALSE) {
  
 function sendYo(){
 
-	//configure - SQLI
-	$con = new mysqli('localhost', 'founder', '********************', 'founder_yo');
-	 
-	//connect to database
-	if($con->connect_errno > 0){
-		die('Unable to connect to database [' . $con->connect_error . ']');
-	}
-
 	echo 'Sending YO' . '</br>';
 	
 	//send to YO
@@ -72,12 +64,21 @@ function sendYo(){
 
 	var_dump($result);
 	
-	insertLog($con);
+	insertLog();
 	echo '</br>';
 	
 }
 
-function insertLog($con){
+function insertLog(){
+
+
+	//configure - SQLI
+	$con = new mysqli('localhost', 'founder', '********************', 'founder_yo');
+	 
+	//connect to database
+	if($con->connect_errno > 0){
+		die('Unable to connect to database [' . $con->connect_error . ']');
+	}
 
 	//insert into database
 	$query = "insert into log (
