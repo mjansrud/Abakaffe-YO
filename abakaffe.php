@@ -5,13 +5,13 @@
 *********MORTEN JANSRUD***********
 *********************************/
 
-//run script
+// run script
 main();
   
 // define main function
 function main(){
 
-	//fetch API content
+	// fetch API content
 	$json = @file_get_contents('http://kaffe.abakus.no/api/status');
 	$debug = FALSE;
 
@@ -24,27 +24,27 @@ function main(){
 
 	if($json === FALSE) {
 
-		//error connecting to abakus.no
+		// error connecting to abakus.no
 		$log->lwrite('Abaconnection timed out'); 
 
 	}else{
 
-		//for debugging 
+		// for debugging 
 		if($debug) $log->lwrite($json); 
 		
-		//decode JSON result and create variables
+		// decode JSON result and create variables
 		$coffee = json_decode($json, true); 
 		$status = $coffee['coffee']['status'];
 		$hours = $coffee['coffee']['time_since']['hours']; 
 		$minutes = $coffee['coffee']['time_since']['minutes']; 
 
-		//log status
+		// log status
 		$status_string = ($status) ? 'true' : 'false';
 		$log->lwrite('Abastatus: ' . $status_string);
 		
 		switch($status){
 			case true:
-				//kaffetrakteren er på
+				// kaffetrakteren er på
 				$log->lwrite('Hours since last coffee: ' . $hours);
 				$log->lwrite('Minutes since last coffee: ' . $minutes);
 				if($hours == 0 && $minutes == 0){
@@ -52,7 +52,7 @@ function main(){
 				}
 				break; 
 			case false:
-				//kaffetrakteren er av
+				// kaffetrakteren er av
 				$log->lwrite('Hours since last coffee: ' . $hours);
 				$log->lwrite('Minutes since last coffee: ' . $minutes);
 				break;
@@ -62,7 +62,7 @@ function main(){
 		}
 	}
 	
-	//if debug, send to specific user
+	// if debug, send to specific user
 	if($debug) sendYo($debug, $log, FALSE);
 	
 	$log->lwrite('-------------------------------------------------------------');
@@ -71,10 +71,10 @@ function main(){
 
 function sendYo($debug, $log, $new_coffee){
 
-	//define token
+	// define token
 	$api_token = '***************************************';
 	
-	//send to YO
+	// send to YO
 	if($debug && !$new_coffee){
 		$username = '********';
 		$log->lwrite('Sending YO to ' . $username);
@@ -98,25 +98,25 @@ function sendYo($debug, $log, $new_coffee){
 	$context  = stream_context_create($options);
 	$result = file_get_contents($url, false, $context);
 
-	//log YO result
+	// log YO result
 	if($debug) $log->lwrite('Result: ' . $result);
 		
 }
 
 function insertDatabaseLog($log){
 
-	//log
+	// log
 	$log->lwrite('Inserting into database');
 	
-	//configure - SQLI
+	// configure - SQLI
 	$con = new mysqli('localhost', 'founder', '****************', 'founder_yo');
 	 
-	//connect to database
+	// connect to database
 	if($con->connect_errno > 0){
 		die('Unable to connect to database [' . $con->connect_error . ']');
 	}
 
-	//insert into database
+	// insert into database
 	$query = "insert into log (
 									receiver, 
 									sender,
