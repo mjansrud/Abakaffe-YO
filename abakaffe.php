@@ -8,7 +8,7 @@
 //run script
 main();
   
-// close log file
+// define main function
 function main(){
 
 	//fetch API content
