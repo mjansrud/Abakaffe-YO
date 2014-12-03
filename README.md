@@ -10,7 +10,7 @@ Abakaffe-YO sender deg et YO når kaffen er ferdig på Abakuskontoret.
 * Sett deg tilbake og les VG til du mottar et YO fra ABAKAFFE som signaliserer at kaffen er ferdig.
 
 ### Statistikk:
-Er du gira på å se om du er tidenes kaffedrikker?
+Er du gira på å se om du er tidenes kaffedrikker? 
 http://yo.founder.no/abakaffe/
 
 ### Filer:
