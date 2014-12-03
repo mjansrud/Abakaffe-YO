@@ -5,54 +5,55 @@
 *********MORTEN JANSRUD***********
 *********************************/
 
-// run script
+//run script
 main();
   
-// define main function
+// close log file
 function main(){
 
-	// fetch API content
+	//fetch API content
 	$json = @file_get_contents('http://kaffe.abakus.no/api/status');
 	$debug = FALSE;
-
+	$ababug = FALSE;
+ 
 	// FileLogging class initialization
 	$log = new FileLogging();
 	 
 	// set path and name of log file (optional)
-	$log->lfile('log.txt');
+	$log->lfile('abakaffe.txt');
 	$log->lwrite('Running script');
 
 	if($json === FALSE) {
 
-		// error connecting to abakus.no
+		//error connecting to abakus.no
 		$log->lwrite('Abaconnection timed out'); 
 
 	}else{
 
-		// for debugging 
+		//for debugging 
 		if($debug) $log->lwrite($json); 
 		
-		// decode JSON result and create variables
-		$coffee = json_decode($json, true); 
-		$status = $coffee['coffee']['status'];
-		$hours = $coffee['coffee']['time_since']['hours']; 
+		//decode JSON result and create variables
+		$coffee  = json_decode($json, true); 
+		$status  = $coffee['coffee']['status'];
+		$hours   = $coffee['coffee']['time_since']['hours']; 
 		$minutes = $coffee['coffee']['time_since']['minutes']; 
 
-		// log status
+		//log status
 		$status_string = ($status) ? 'true' : 'false';
 		$log->lwrite('Abastatus: ' . $status_string);
 		
 		switch($status){
 			case true:
-				// kaffetrakteren er på
+				//kaffetrakteren er på
 				$log->lwrite('Hours since last coffee: ' . $hours);
 				$log->lwrite('Minutes since last coffee: ' . $minutes);
-				if($hours == 0 && $minutes == 0){
-					sendYo($debug, $log , TRUE);
+				if((!$ababug && $hours == 0 && $minutes == 4) || ($ababug && $hours == 2 && $minutes == 4)){
+					sendYo($debug, $log , TRUE); 
 				}
 				break; 
 			case false:
-				// kaffetrakteren er av
+				//kaffetrakteren er av
 				$log->lwrite('Hours since last coffee: ' . $hours);
 				$log->lwrite('Minutes since last coffee: ' . $minutes);
 				break;
@@ -62,7 +63,7 @@ function main(){
 		}
 	}
 	
-	// if debug, send to specific user
+	//send yo if debug
 	if($debug) sendYo($debug, $log, FALSE);
 	
 	$log->lwrite('-------------------------------------------------------------');
@@ -71,52 +72,87 @@ function main(){
 
 function sendYo($debug, $log, $new_coffee){
 
-	// define token
-	$api_token = '***************************************';
-	
-	// send to YO
-	if($debug && !$new_coffee){
-		$username = '********';
-		$log->lwrite('Sending YO to ' . $username);
-		$url = 'https://api.justyo.co/yo/';
-		$data = array('api_token' => $api_token, 'username' => $username);
-	}else{
-		$log->lwrite('Sending YO to all');
-		$url = 'https://api.justyo.co/yoall/';
-		$data = array('api_token' => $api_token);
-		insertDatabaseLog($log);
-	}
-
-	// use key 'http' even if you send the request to https://...
-	$options = array(
-		'http' => array(
-			'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-			'method'  => 'POST',
-			'content' => http_build_query($data),
-		),
-	);
-	$context  = stream_context_create($options);
-	$result = file_get_contents($url, false, $context);
-
-	// log YO result
-	if($debug) $log->lwrite('Result: ' . $result);
-		
-}
-
-function insertDatabaseLog($log){
-
-	// log
-	$log->lwrite('Inserting into database');
-	
-	// configure - SQLI
-	$con = new mysqli('localhost', 'founder', '****************', 'founder_yo');
+	//configure - SQLI
+	$con = new mysqli('*********', '*********', '*************', 'f************');
 	 
-	// connect to database
+	//connect to database
 	if($con->connect_errno > 0){
 		die('Unable to connect to database [' . $con->connect_error . ']');
 	}
+	
+	//define token
+	$api_token = '************************************';
+	
+	//send YO
+	if($debug || $new_coffee){
+	
+		// get all users who have asked for a YO
+		$query = " SELECT * FROM coffee WHERE sent = '0' "; 
+		$result = mysqli_query($con, $query);
+		
+		// get result and send yos
+		if ($result) { 
+		
+   			/* determine number of rows result set */
+   			$count = mysqli_num_rows($result);
+			
+			if($count > 0){
+			
+				/* fetch associative array */
+				while ($row = mysqli_fetch_assoc($result)) {	
+			
+					$username = $row["sender"];
+					$log->lwrite('Sending YO to ' . $username);
+					$url = 'https://api.justyo.co/yo/';
+					$data = array('api_token' => $api_token, 'username' => $username);	
+				
+					// use key 'http' even if you send the request to https://...
+					$options = array(
+						'http' => array(
+							'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+							'method'  => 'POST',
+							'content' => http_build_query($data),
+						),
+					);
+					$context  = stream_context_create($options);
+					$yo_result = file_get_contents($url, false, $context);
 
-	// insert into database
+					//update DB, set sent date
+    				mysqli_query($con, " update coffee set sent = '1', date_sent = now() where id = " . $row["id"]);
+    				
+					//log YO result
+					if($debug) $log->lwrite('Result: ' . $yo_result);
+
+			
+				}
+			
+			}else{
+			
+				//log YO result
+				$log->lwrite('No coffee requests :( ');
+				
+			}
+
+  			/* free result set */
+    		mysqli_free_result($result);
+    		
+		}else {
+			$log->lwrite('A MySQL error has occurred. Your Query: ' . $query . ", Error: " . mysqli_error($con));
+		}
+		
+		//insert DB log
+		insertDatabaseLog($log, $con);
+		
+	}
+		
+}
+
+function insertDatabaseLog($log, $con){
+
+	//log
+	$log->lwrite('Inserting into database');
+
+	//insert into database
 	$query = "insert into log (
 									receiver, 
 									sender,
